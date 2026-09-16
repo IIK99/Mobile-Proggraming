@@ -73,10 +73,22 @@ class _ProjectPageState extends State<ProjectPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(onPressed: () => _calculate('+'), child: const Text('+')),
-              ElevatedButton(onPressed: () => _calculate('-'), child: const Text('-')),
-              ElevatedButton(onPressed: () => _calculate('*'), child: const Text('*')),
-              ElevatedButton(onPressed: () => _calculate('/'), child: const Text('/')),
+              ElevatedButton(
+                onPressed: () => _calculate('+'),
+                child: const Text('+'),
+              ),
+              ElevatedButton(
+                onPressed: () => _calculate('-'),
+                child: const Text('-'),
+              ),
+              ElevatedButton(
+                onPressed: () => _calculate('*'),
+                child: const Text('*'),
+              ),
+              ElevatedButton(
+                onPressed: () => _calculate('/'),
+                child: const Text('/'),
+              ),
             ],
           ),
           const SizedBox(height: 30),
