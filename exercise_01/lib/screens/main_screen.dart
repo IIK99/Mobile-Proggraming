@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'profile_page.dart';
 import 'project_page.dart';
+import 'materi_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -18,6 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomePage(),
     const ProfilePage(),
     const ProjectPage(),
+    const MateriPage(),
   ];
 
   void _onTabTapped(int index) {
@@ -88,6 +90,16 @@ class _MainScreenState extends State<MainScreen> {
                 });
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Materi'),
+              onTap: () {
+                Navigator.pop(context); // Close drawer
+                setState(() {
+                  _currentIndex = 3;
+                });
+              },
+            ),
           ],
         ),
       ),
@@ -95,10 +107,12 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Project'),
+          BottomNavigationBarItem(icon: Icon(Icons.edit), label: 'Materi'),
         ],
       ),
     );
