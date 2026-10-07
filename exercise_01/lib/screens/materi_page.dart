@@ -4,6 +4,7 @@ import '../pertemuan_03/exercise_01.dart';
 import '../pertemuan_04/toast_alert.dart';
 
 import 'package:exercise_01/pertemuan_05/gesture_detector.dart';
+import 'package:exercise_01/pertemuan_06/form.dart';
 
 class MateriPage extends StatefulWidget {
   const MateriPage({super.key});
@@ -18,6 +19,7 @@ class _MateriPageState extends State<MateriPage> {
     'Pertemuan 3',
     'Pertemuan 4',
     'Pertemuan 5',
+    'Pertemuan 6',
   ];
 
   void _navigateToPertemuan(BuildContext context, String pertemuan) {
@@ -39,6 +41,12 @@ class _MateriPageState extends State<MateriPage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const GestureDetectorPage()),
+        );
+        break;
+      case 'Pertemuan 6':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FormPage()),
         );
         break;
       default:

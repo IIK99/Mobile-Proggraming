@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class PageBasicList extends StatelessWidget {
+  const PageBasicList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
