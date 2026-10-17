@@ -1,3 +1,4 @@
+import 'package:exercise_01/login/login.dart';
 import 'package:flutter/material.dart';
 
 import '../pertemuan_03/exercise_01.dart';
@@ -5,6 +6,7 @@ import '../pertemuan_04/toast_alert.dart';
 
 import 'package:exercise_01/pertemuan_05/gesture_detector.dart';
 import 'package:exercise_01/pertemuan_06/form.dart';
+import 'package:exercise_01/ikmal_apps/screens/login_page.dart';
 
 class MateriPage extends StatefulWidget {
   const MateriPage({super.key});
@@ -20,6 +22,8 @@ class _MateriPageState extends State<MateriPage> {
     'Pertemuan 4',
     'Pertemuan 5',
     'Pertemuan 6',
+    'login',
+    'Ikmal_apps',
   ];
 
   void _navigateToPertemuan(BuildContext context, String pertemuan) {
@@ -47,6 +51,18 @@ class _MateriPageState extends State<MateriPage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const FormPage()),
+        );
+        break;
+      case 'login':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+        break;
+      case 'Ikmal_apps':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const IkmalLoginPage()),
         );
         break;
       default:
