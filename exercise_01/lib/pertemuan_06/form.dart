@@ -35,16 +35,18 @@ class _FormPageState extends State<FormPage> {
   }
 
   String? _validateNama(String? value) {
-    if (value == null || value.trim().isEmpty)
+    if (value == null || value.trim().isEmpty) {
       return 'Nama lengkap wajib diisi';
+    }
     if (value.trim().length < 3) return 'Nama minimal 3 karakter';
     return null;
   }
 
   String? _validateNim(String? value) {
     if (value == null || value.trim().isEmpty) return 'NIM wajib diisi';
-    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim()))
+    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
       return 'NIM hanya boleh angka';
+    }
     if (value.trim().length < 8) return 'NIM minimal 8 digit';
     return null;
   }
@@ -58,8 +60,9 @@ class _FormPageState extends State<FormPage> {
 
   String? _validateHp(String? value) {
     if (value == null || value.trim().isEmpty) return 'Nomor HP wajib diisi';
-    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim()))
+    if (!RegExp(r'^[0-9]+$').hasMatch(value.trim())) {
       return 'Nomor HP hanya boleh angka';
+    }
     if (value.trim().length < 10 || value.trim().length > 13) {
       return 'Nomor HP harus 10-13 digit';
     }
@@ -119,7 +122,7 @@ class _FormPageState extends State<FormPage> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

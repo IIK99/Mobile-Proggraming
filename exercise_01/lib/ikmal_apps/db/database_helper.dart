@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:path/path.dart' as p;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../models/user_model.dart';
 import '../models/news_model.dart';
@@ -31,7 +33,15 @@ class DatabaseHelper {
   void _initWebStore() {
     if (_webUsers.isNotEmpty) return;
 
-    // Seeding user default untuk web
+    // 1. Inisialisasi awal sinkron (agar langsung tersedia tanpa menunggu async)
+    _seedDefaultUsersAndNews();
+
+    // 2. Muat data persisten dari SharedPreferences (Web localStorage) jika sebelumnya ada perubahan
+    _loadFromWebStorage();
+  }
+
+  void _seedDefaultUsersAndNews() {
+    _webUsers.clear();
     // Password db mahasiswa: Ikmal.1099 (juga mendukung Password123)
     _webUsers.add(
       UserModel(
@@ -42,16 +52,7 @@ class DatabaseHelper {
       ),
     );
 
-    _webUsers.add(
-      UserModel(
-        id: _webUserIdCounter++,
-        username: 'admin',
-        password: 'Ikmal.1099',
-        namaLengkap: 'Admin Redaksi Ikmal',
-      ),
-    );
-
-    // Seeding data berita awal menggunakan aset lokal
+    _webNews.clear();
     final initialNews = _getInitialNewsData();
     for (var data in initialNews) {
       _webNews.add(
@@ -66,6 +67,59 @@ class DatabaseHelper {
           isFavorite: (data['is_favorite'] as int) == 1,
         ),
       );
+    }
+  }
+
+  Future<void> _loadFromWebStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersStr = prefs.getString('ikmal_web_users_store');
+      final newsStr = prefs.getString('ikmal_web_news_store');
+
+      if (usersStr != null && usersStr.isNotEmpty) {
+        final List list = jsonDecode(usersStr);
+        final loadedUsers = list
+            .map((e) => UserModel.fromMap(Map<String, dynamic>.from(e)))
+            .toList();
+        if (loadedUsers.isNotEmpty) {
+          _webUsers.clear();
+          _webUsers.addAll(loadedUsers);
+          _webUserIdCounter = _webUsers
+                  .map((u) => u.id ?? 0)
+                  .fold(0, (max, e) => e > max ? e : max) +
+              1;
+        }
+      }
+
+      if (newsStr != null && newsStr.isNotEmpty) {
+        final List list = jsonDecode(newsStr);
+        final loadedNews = list
+            .map((e) => NewsModel.fromMap(Map<String, dynamic>.from(e)))
+            .toList();
+        if (loadedNews.isNotEmpty) {
+          _webNews.clear();
+          _webNews.addAll(loadedNews);
+          _webNewsIdCounter = _webNews
+                  .map((n) => n.id ?? 0)
+                  .fold(0, (max, e) => e > max ? e : max) +
+              1;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading persistent web storage: $e');
+    }
+  }
+
+  Future<void> _saveToWebStorage() async {
+    if (!kIsWeb) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final usersStr = jsonEncode(_webUsers.map((u) => u.toMap()).toList());
+      final newsStr = jsonEncode(_webNews.map((n) => n.toMap()).toList());
+      await prefs.setString('ikmal_web_users_store', usersStr);
+      await prefs.setString('ikmal_web_news_store', newsStr);
+    } catch (e) {
+      debugPrint('Error saving to persistent web storage: $e');
     }
   }
 
@@ -203,6 +257,7 @@ class DatabaseHelper {
         namaLengkap: user.namaLengkap,
       );
       _webUsers.add(newUser);
+      await _saveToWebStorage();
       return newUser.id!;
     }
 
@@ -327,6 +382,7 @@ class DatabaseHelper {
     if (kIsWeb) {
       final newNews = news.copyWith(id: _webNewsIdCounter++);
       _webNews.add(newNews);
+      await _saveToWebStorage();
       return newNews.id!;
     }
 
@@ -340,6 +396,7 @@ class DatabaseHelper {
       final index = _webNews.indexWhere((n) => n.id == news.id);
       if (index != -1) {
         _webNews[index] = news;
+        await _saveToWebStorage();
         return 1;
       }
       return 0;
@@ -358,6 +415,7 @@ class DatabaseHelper {
   Future<int> deleteNews(int id) async {
     if (kIsWeb) {
       _webNews.removeWhere((n) => n.id == id);
+      await _saveToWebStorage();
       return 1;
     }
 
@@ -371,6 +429,7 @@ class DatabaseHelper {
       final index = _webNews.indexWhere((n) => n.id == id);
       if (index != -1) {
         _webNews[index] = _webNews[index].copyWith(isFavorite: isFavorite);
+        await _saveToWebStorage();
         return 1;
       }
       return 0;
