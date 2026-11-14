@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:exercise_02/login_page.dart';
-import 'package:exercise_02/register_page.dart';
+import '../lib/auth/login_page.dart';
+import '../lib/auth/register_page.dart';
 
 void main() {
   testWidgets('LoginPage tampil dengan tombol masuk', (tester) async {

@@ -1,8 +1,6 @@
-// Halaman Login Akun Mahasiswa.
-// Mengarahkan ke RegisterPage lewat tombol "Daftar di sini".
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,7 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _hidePassword = true;
   String? _errorMessage;
 
   @override
@@ -28,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  Future<void> _submitLogin() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -36,36 +34,24 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-    final auth = Supabase.instance.client.auth;
-
     try {
-      await auth.signInWithPassword(email: email, password: password);
-      // AuthGate di main.dart akan otomatis pindah ke TodoPage
-      // begitu onAuthStateChange memancarkan session baru.
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // AuthGate akan otomatis menampilkan TodoPage setelah session terbentuk.
     } on AuthException catch (e) {
-      setState(() {
-        _errorMessage = e.message;
-      });
+      if (mounted) setState(() => _errorMessage = e.message);
     } catch (_) {
-      setState(() {
-        _errorMessage =
-            'Gagal terhubung ke server. Periksa koneksi internet Anda.';
-      });
-    } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _errorMessage = 'Login gagal. Periksa koneksi internet dan coba lagi.';
         });
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-  }
-
-  void _goToRegister() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RegisterPage()),
-    );
   }
 
   @override
@@ -88,8 +74,8 @@ class _LoginPageState extends State<LoginPage> {
                 child: Form(
                   key: _formKey,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
                         Icons.school_outlined,
@@ -114,25 +100,36 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 24),
 
                       if (_errorMessage != null) ...[
-                        _ErrorBox(message: _errorMessage!),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFEF2F2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFECACA)),
+                          ),
+                          child: Text(
+                            _errorMessage!,
+                            style: const TextStyle(
+                              color: Color(0xFFB91C1C),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                       ],
 
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
                         decoration: const InputDecoration(
-                          labelText: 'Email Mahasiswa',
-                          hintText: 'contoh: budi@mhs.kampus.ac.id',
+                          labelText: 'Email',
                           prefixIcon: Icon(Icons.email_outlined),
                           border: OutlineInputBorder(),
                         ),
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Email wajib diisi';
-                          }
-                          if (!value.contains('@') || !value.contains('.')) {
+                          final email = value?.trim() ?? '';
+                          if (email.isEmpty) return 'Email wajib diisi';
+                          if (!email.contains('@') || !email.contains('.')) {
                             return 'Format email tidak valid';
                           }
                           return null;
@@ -142,36 +139,25 @@ class _LoginPageState extends State<LoginPage> {
 
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) {
-                          if (!_isLoading) _submitLogin();
-                        },
+                        obscureText: _hidePassword,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          hintText: 'Minimal 6 karakter',
                           prefixIcon: const Icon(Icons.lock_outline),
                           border: const OutlineInputBorder(),
                           suffixIcon: IconButton(
-                            tooltip: _obscurePassword
-                                ? 'Tampilkan password'
-                                : 'Sembunyikan password',
+                            onPressed: () {
+                              setState(() => _hidePassword = !_hidePassword);
+                            },
                             icon: Icon(
-                              _obscurePassword
+                              _hidePassword
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
                             ),
-                            onPressed: () => setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            }),
                           ),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Password wajib diisi';
-                          }
-                          if (value.length < 6) {
-                            return 'Password minimal harus 6 karakter';
                           }
                           return null;
                         },
@@ -179,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 24),
 
                       FilledButton(
-                        onPressed: _isLoading ? null : _submitLogin,
+                        onPressed: _isLoading ? null : _login,
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
@@ -197,7 +183,16 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 12),
 
                       TextButton(
-                        onPressed: _isLoading ? null : _goToRegister,
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterPage(),
+                                  ),
+                                );
+                              },
                         child: const Text('Belum punya akun? Daftar di sini'),
                       ),
                     ],
@@ -207,28 +202,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// Widget kecil untuk menampilkan kotak error, bisa dipakai ulang.
-class _ErrorBox extends StatelessWidget {
-  final String message;
-  const _ErrorBox({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF2F2),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFECACA)),
-      ),
-      child: Text(
-        message,
-        style: const TextStyle(color: Color(0xFFB91C1C), fontSize: 13),
       ),
     );
   }

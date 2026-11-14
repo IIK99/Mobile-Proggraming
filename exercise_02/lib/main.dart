@@ -1,18 +1,23 @@
-// Titik masuk utama aplikasi, inisialisasi Supabase, dan gerbang auth.
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'supabase_config.dart';
-import 'login_page.dart';
-import 'todo_page.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'config/supabase_config.dart';
+import 'auth/login_page.dart';
+import 'pages/home.dart';
+import 'config/firebase_options.dart'; // pastikan file ini dibuat via `flutterfire configure`
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Inisialisasi Supabase
   await Supabase.initialize(
     url: SupabaseConfig.supabaseUrl,
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
+
+  // Inisialisasi Firebase (Tahap 7 PDF Modul)
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const TodoMahasiswaApp());
 }
@@ -26,9 +31,7 @@ class TodoMahasiswaApp extends StatelessWidget {
       title: 'To-Do List Mahasiswa',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0284C7),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0284C7)),
         useMaterial3: true,
       ),
       home: const AuthGate(),
@@ -36,8 +39,6 @@ class TodoMahasiswaApp extends StatelessWidget {
   }
 }
 
-/// Gerbang auth: tampilkan LoginPage kalau belum ada session,
-/// atau TodoPage kalau user sudah login.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -54,7 +55,8 @@ class AuthGate extends StatelessWidget {
 
         final session = snapshot.data?.session;
         if (session != null) {
-          return const TodoPage();
+          // KUNCI: Arahkan ke HomePage (bukan TodoPage langsung)
+          return const HomePage();
         }
         return const LoginPage();
       },

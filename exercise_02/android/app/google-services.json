@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1035891208510",
+    "project_id": "portofolio-fe-ikmal",
+    "storage_bucket": "portofolio-fe-ikmal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1035891208510:android:87aadea8b18126d755bc6f",
+        "android_client_info": {
+          "package_name": "com.example.exercise_02"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzM2lRJSvU4H48sLvRPsyqTRr91WZmBC4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
